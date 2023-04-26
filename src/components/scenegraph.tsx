@@ -9,6 +9,8 @@ export default function SceneGraph() {
         const objects: THREE.Object3D[] = []
         const renderer = new THREE.WebGLRenderer({ canvas: canvasRef.current! })
         const camera = new THREE.PerspectiveCamera(40, 2, 0.1, 1000)
+        renderer.setClearColor(0xAAAAAA);
+        renderer.shadowMap.enabled = true
 
         camera.position.set(0, 50, 0);
         camera.up.set(0, 0, 1);
