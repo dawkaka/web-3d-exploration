@@ -3,7 +3,6 @@ import * as THREE from "three"
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import { Font, FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
 import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js';
-import D from 'three/examples/fonts/helvetiker_regular.typeface.json'
 
 
 export default function Primitives() {
@@ -46,12 +45,16 @@ export default function Primitives() {
         function createMaterial() {
             const material = new THREE.MeshPhongMaterial({
                 side: THREE.DoubleSide,
+
             });
 
             const hue = Math.random();
             const saturation = 1;
             const luminance = .5;
             material.color.setHSL(hue, saturation, luminance);
+
+            //remove this for dark lightning effect
+            material.emissive.setHSL(hue, saturation, luminance)
 
             return material;
         }
@@ -165,13 +168,10 @@ export default function Primitives() {
     })
 
     return (
-        <div>
-            <canvas ref={canvasRef} style={{
-                height: "100%",
-                width: "100%",
-                display: "block"
-            }}></canvas>
-        </div>
+        <canvas ref={canvasRef} style={{
+            height: "300px",
+            width: "600px",
+        }}></canvas>
     )
 }
 
