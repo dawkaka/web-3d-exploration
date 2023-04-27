@@ -42,6 +42,7 @@ export default function Tank() {
             light.shadow.bias = 0.001;
         }
 
+
         {
             const light = new THREE.DirectionalLight(0xffffff, 1);
             light.position.set(1, 2, 4);
@@ -227,8 +228,8 @@ export default function Tank() {
     return (
         <canvas ref={canvasRef}
             style={{
-                height: "100%",
-                width: "100%",
+                height: "300px",
+                width: "600px",
             }}
         >
         </canvas>
