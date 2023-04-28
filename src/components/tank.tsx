@@ -42,7 +42,6 @@ export default function Tank() {
             light.shadow.bias = 0.001;
         }
 
-
         {
             const light = new THREE.DirectionalLight(0xffffff, 1);
             light.position.set(1, 2, 4);
