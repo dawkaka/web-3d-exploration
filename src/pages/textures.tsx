@@ -14,10 +14,144 @@ export default function Textures() {
             </Head>
             <main style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
                 <First />
+                <Lose />
             </main>
         </>
     )
 }
+
+
+function Lose() {
+    const canvasRef = useRef<HTMLCanvasElement>(null)
+
+    useEffect(() => {
+        const renderer = new THREE.WebGLRenderer({ canvas: canvasRef.current! })
+        const scene = new THREE.Scene()
+        const camera = new THREE.PerspectiveCamera(60, 2, 0.1, 1000)
+        camera.position.set(-4, 3, 2).multiplyScalar(3);
+        camera.lookAt(0, 0, 0);
+
+
+        new OrbitControls(camera, renderer.domElement)
+
+        {
+            const light = new THREE.DirectionalLight(0xffffff, 1);
+            light.position.set(0, 20, 0);
+            scene.add(light);
+            light.castShadow = true;
+            light.shadow.mapSize.width = 2048;
+            light.shadow.mapSize.height = 2048;
+
+            const d = 100;
+            light.shadow.camera.left = -d;
+            light.shadow.camera.right = d;
+            light.shadow.camera.top = d;
+            light.shadow.camera.bottom = -d;
+            light.shadow.camera.near = 1;
+            light.shadow.camera.far = 50;
+            light.shadow.bias = 0.001;
+        }
+
+        {
+            const light = new THREE.DirectionalLight(0xffffff, 1);
+            light.position.set(1, 2, 4);
+            scene.add(light);
+        }
+
+        const plane = new THREE.Mesh(new THREE.PlaneGeometry(50, 50), new THREE.MeshPhongMaterial({ color: 0xCC8866 }))
+        plane.rotation.x = -0.5 * Math.PI
+        scene.add(plane)
+
+        const board = new THREE.Object3D()
+        scene.add(board)
+
+        const boardHeight = .5
+        const boardWidth = 3
+        const boardLength = 8
+
+        const baseGeo = new THREE.BoxGeometry(boardWidth, boardHeight, boardLength)
+        const baseMesh = new THREE.Mesh(baseGeo, new THREE.MeshPhongMaterial({ color: "blue", emissive: "darkblue" }))
+        baseMesh.position.y = .25
+        board.add(baseMesh)
+
+        const cylinderHeight = 5
+        const cylinderRadius = .125
+
+        const cylinderGeo = new THREE.CylinderGeometry(cylinderRadius, cylinderRadius, cylinderHeight)
+        const cylinerMat = new THREE.MeshPhongMaterial({ color: "brown" })
+
+        const cylinderPositions = [
+            { x: boardWidth / 2 - cylinderRadius * 2, z: boardLength / 2 - cylinderRadius * 2 },
+            { x: -1 * (boardWidth / 2 - cylinderRadius * 2), z: (boardLength / 2 - cylinderRadius * 2) },
+            { x: boardWidth / 2 - cylinderRadius * 2, z: -1 * (boardLength / 2 - cylinderRadius * 2) },
+            { x: -1 * (boardWidth / 2 - cylinderRadius * 2), z: -1 * (boardLength / 2 - cylinderRadius * 2) },
+        ]
+
+        cylinderPositions.forEach(pos => {
+            const cylinder = new THREE.Mesh(cylinderGeo, cylinerMat)
+            cylinder.position.y = cylinderHeight / 2 + boardHeight
+            cylinder.position.x = pos.x
+            cylinder.position.z = pos.z
+            board.add(cylinder)
+        })
+
+
+        {
+            const barsGeo = new THREE.BoxGeometry(.25, .25, boardLength)
+            const topLeftMesh = new THREE.Mesh(barsGeo, cylinerMat)
+            topLeftMesh.position.y = cylinderHeight + boardHeight
+            topLeftMesh.position.x = boardWidth / 2 - cylinderRadius * 2
+            board.add(topLeftMesh)
+
+            const topRightMesh = new THREE.Mesh(barsGeo, cylinerMat)
+            topRightMesh.position.y = cylinderHeight + boardHeight
+            topRightMesh.position.x = -1 * (boardWidth / 2 - cylinderRadius * 2)
+            board.add(topRightMesh)
+
+        }
+
+        const ballRadius = (boardLength * 0.6) / 5 * .5
+        const cent70 = boardLength * 0.6
+        const ballPositions = [
+            { z: cent70 / 2 - ballRadius },
+            { z: cent70 / 2 - (ballRadius * 3) },
+            { z: cent70 / 2 - (ballRadius * 5) },
+            { z: cent70 / 2 - (ballRadius * 7) },
+            { z: cent70 / 2 - (ballRadius * 9) },
+        ]
+
+        ballPositions.forEach(pos => {
+            const ballGeo = new THREE.SphereGeometry(ballRadius, 12, 12)
+            const ballMesh = new THREE.Mesh(ballGeo, new THREE.MeshPhongMaterial({ color: "grey" }))
+            ballMesh.position.y = boardHeight + 1
+            ballMesh.position.z = pos.z
+            board.add(ballMesh)
+        })
+
+        function render(time: number) {
+            time *= 0.001
+            if (addjust(renderer)) {
+                const canvas = canvasRef.current!
+                camera.aspect = canvas.width / canvas.height
+                camera.updateProjectionMatrix()
+            }
+
+            renderer.render(scene, camera)
+            requestAnimationFrame(render)
+        }
+        requestAnimationFrame(render)
+
+
+    }, [])
+
+    return (
+        <canvas ref={canvasRef} style={{ height: "600px", width: "1200px" }}></canvas>
+    )
+}
+
+
+
+
 
 function First() {
     const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -31,11 +165,9 @@ function First() {
         const light = new THREE.DirectionalLight(0xFFFFFF, 1)
         light.position.z = 10
         light.position.y = 1
-
         scene.add(light)
 
         new OrbitControls(camera, renderer.domElement)
-
         const loader = new THREE.TextureLoader()
 
         const materials = [
@@ -68,19 +200,19 @@ function First() {
         requestAnimationFrame(render)
     }, [])
 
-    function addjust(renderer: THREE.WebGLRenderer) {
-        const canvas = canvasRef.current!
-        let needs = false
-        const width = canvas.clientWidth
-        const height = canvas.clientHeight
-        needs = canvas.width !== width || canvas.height !== height
-        if (needs) {
-            renderer.setSize(width, height, false);
-        }
-        return needs
-    }
-
     return (
         <canvas ref={canvasRef} style={{ width: "600px", height: "300px" }} />
     )
+}
+
+function addjust(renderer: THREE.WebGLRenderer) {
+    const canvas = renderer.domElement
+    let needs = false
+    const width = canvas.clientWidth
+    const height = canvas.clientHeight
+    needs = canvas.width !== width || canvas.height !== height
+    if (needs) {
+        renderer.setSize(width, height, false);
+    }
+    return needs
 }
