@@ -13,7 +13,7 @@ export default function Textures() {
                 <link rel="icon" href="/favicon.ico" />
             </Head>
             <main style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
-                <First />
+                {/* <First /> */}
                 <Lose />
             </main>
         </>
@@ -27,8 +27,8 @@ function Lose() {
     useEffect(() => {
         const renderer = new THREE.WebGLRenderer({ canvas: canvasRef.current! })
         const scene = new THREE.Scene()
-        const camera = new THREE.PerspectiveCamera(60, 2, 0.1, 1000)
-        camera.position.set(-4, 3, 2).multiplyScalar(3);
+        const camera = new THREE.PerspectiveCamera(20, 2, 0.1, 1000)
+        camera.position.set(-4, 4, 10).multiplyScalar(3);
         camera.lookAt(0, 0, 0);
 
 
@@ -120,12 +120,43 @@ function Lose() {
             { z: cent70 / 2 - (ballRadius * 9) },
         ]
 
-        ballPositions.forEach(pos => {
+        const balls = ballPositions.map(pos => {
             const ballGeo = new THREE.SphereGeometry(ballRadius, 12, 12)
             const ballMesh = new THREE.Mesh(ballGeo, new THREE.MeshPhongMaterial({ color: "grey" }))
-            ballMesh.position.y = boardHeight + 1
+            ballMesh.position.y = boardHeight + 1.5
             ballMesh.position.z = pos.z
             board.add(ballMesh)
+            return ballMesh
+        })
+        const loc = new THREE.Vector3()
+
+        const lines = ballPositions.map((pos, ind) => {
+            const handle = new THREE.Object3D()
+            handle.position.y = cylinderHeight + boardHeight
+            handle.position.z = pos.z
+            handle.position.x = -1 * (boardWidth / 2 - cylinderRadius * 2)
+            const stringLength = cylinderHeight - 1.5
+            const geo = new THREE.BoxGeometry(.025, .025, stringLength)
+            const material = new THREE.MeshPhongMaterial({ color: "green" })
+            const lineOne = new THREE.Mesh(geo, material)
+            lineOne.position.z = stringLength / 2
+
+            balls[ind].getWorldPosition(loc)
+            handle.lookAt(loc)
+            handle.add(lineOne)
+
+            const handle2 = new THREE.Object3D()
+            handle2.position.y = cylinderHeight + boardHeight
+            handle2.position.z = pos.z
+            handle2.position.x = (boardWidth / 2 - cylinderRadius * 2)
+            const line2 = new THREE.Mesh(geo, material)
+            line2.position.z = stringLength / 2
+
+            handle2.add(line2)
+            handle2.lookAt(loc)
+
+            board.add(handle, handle2)
+            return [handle, handle2]
         })
 
         function render(time: number) {
@@ -135,7 +166,14 @@ function Lose() {
                 camera.aspect = canvas.width / canvas.height
                 camera.updateProjectionMatrix()
             }
+            balls.forEach((ball, ind) => {
+                if (ind === 0) {
+                    ball.position.y = Math.sin(time * 2) * 2
 
+                    ball.getWorldPosition(loc)
+                    lines[0].forEach(handle => handle.lookAt(loc))
+                }
+            })
             renderer.render(scene, camera)
             requestAnimationFrame(render)
         }
