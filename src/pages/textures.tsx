@@ -27,8 +27,10 @@ function Lose() {
         const renderer = new THREE.WebGLRenderer({ canvas: canvasRef.current! })
         const scene = new THREE.Scene()
         const camera = new THREE.PerspectiveCamera(25, window.innerWidth / window.innerHeight, 0.1, 1000)
-        camera.position.set(-4, 5, 10).multiplyScalar(3);
+        camera.position.set(8, 4, 10).multiplyScalar(3);
         camera.lookAt(0, 0, 0);
+
+        const loader = new THREE.TextureLoader()
 
 
         new OrbitControls(camera, renderer.domElement)
@@ -57,26 +59,32 @@ function Lose() {
             scene.add(light);
         }
 
+        const actualScene = new THREE.Object3D()
+        actualScene.position.y = -1
+        scene.add(actualScene)
+
+
         const plane = new THREE.Mesh(new THREE.PlaneGeometry(50, 50), new THREE.MeshPhongMaterial({ color: 0xCC8866 }))
         plane.rotation.x = -0.5 * Math.PI
-        scene.add(plane)
+        // actualScene.add(plane)
 
         const board = new THREE.Object3D()
-        scene.add(board)
+        actualScene.add(board)
+
 
         const boardHeight = .5
         const boardWidth = 3
         const boardLength = 8
 
         const baseGeo = new THREE.BoxGeometry(boardWidth, boardHeight, boardLength)
-        const baseMesh = new THREE.Mesh(baseGeo, new THREE.MeshPhongMaterial({ color: "blue", emissive: "darkblue" }))
-        baseMesh.position.y = .25
+        const baseMesh = new THREE.Mesh(baseGeo, new THREE.MeshPhongMaterial({ map: loader.load("./wood.jpg") }))
+        baseMesh.position.y = boardHeight / 2
         board.add(baseMesh)
 
         const cylinderHeight = 5
         const cylinderRadius = .125
 
-        const cylinderGeo = new THREE.CylinderGeometry(cylinderRadius, cylinderRadius, cylinderHeight)
+        const cylinderGeo = new THREE.CylinderGeometry(cylinderRadius, cylinderRadius, cylinderHeight, 12, 12)
         const cylinerMat = new THREE.MeshPhongMaterial({ color: "brown" })
 
         const cylinderPositions = [
@@ -112,11 +120,11 @@ function Lose() {
         const ballRadius = (boardLength * 0.5) / 5 * .5
         const cent70 = boardLength * 0.5
         const ballPositions = [
-            { z: cent70 / 2 - ballRadius },
+            { z: cent70 / 2 - ballRadius - 0.09 },
             { z: cent70 / 2 - (ballRadius * 3) },
             { z: cent70 / 2 - (ballRadius * 5) },
             { z: cent70 / 2 - (ballRadius * 7) },
-            { z: cent70 / 2 - (ballRadius * 9) },
+            { z: cent70 / 2 - (ballRadius * 9) + 0.09 },
         ]
 
         const balls = ballPositions.map(pos => {
@@ -126,7 +134,7 @@ function Lose() {
             board.add(ballArea)
 
             const ballGeo = new THREE.SphereGeometry(ballRadius, 12, 12)
-            const ballMesh = new THREE.Mesh(ballGeo, new THREE.MeshPhongMaterial({ color: "grey" }))
+            const ballMesh = new THREE.Mesh(ballGeo, new THREE.MeshPhongMaterial({ color: "silver" }))
             ballMesh.position.y = 0 - cylinderHeight + boardHeight + 1.5
             ballArea.add(ballMesh)
 
@@ -140,8 +148,8 @@ function Lose() {
             handle.position.z = pos.z
             handle.position.x = -1 * (boardWidth / 2 - cylinderRadius * 2)
             const stringLength = cylinderHeight - 1.5
-            const geo = new THREE.BoxGeometry(.025, .025, stringLength)
-            const material = new THREE.MeshPhongMaterial({ color: "green" })
+            const geo = new THREE.BoxGeometry(.0125, .0125, stringLength)
+            const material = new THREE.MeshPhongMaterial({ color: 0xFFFFFF })
             const lineOne = new THREE.Mesh(geo, material)
             lineOne.position.z = stringLength / 2
 
@@ -162,7 +170,29 @@ function Lose() {
             board.add(handle, handle2)
             return [handle, handle2]
         })
+
+        let tt = balls[0]
+        let t = tt[1]
+
+        const curve = new THREE.CatmullRomCurve3([
+            new THREE.Vector3(t.position.x, t.position.y, t.position.z),
+            new THREE.Vector3(t.position.x, t.position.y, t.position.z + 1.5),
+            new THREE.Vector3(t.position.x, t.position.y + 1.5, t.position.z + 3),
+            new THREE.Vector3(t.position.x, t.position.y + 1.5, t.position.z + 3),
+            new THREE.Vector3(t.position.x, t.position.y, t.position.z + 1.5),
+            new THREE.Vector3(t.position.x, t.position.y, t.position.z),
+
+        ]);
+
+        // let points = curve.getPoints(50);
+        // let geometry = new THREE.BufferGeometry().setFromPoints(points);
+        // let material = new THREE.LineBasicMaterial({ color: 0xff0000 });
+        // const splineObject = new THREE.Line(geometry, material);
+        // balls[0][0].add(splineObject);
+
         let target = 0
+        const ballPosition = new THREE.Vector3()
+
         function render(time: number) {
             time *= 0.001
             if (addjust(renderer)) {
@@ -171,35 +201,33 @@ function Lose() {
                 camera.updateProjectionMatrix()
             }
 
-            {
-                const ball = balls[target]
-                const area = ball[0]
-                if (target === 0) {
-                    area.rotation.x = Math.sin(time * 6.3) * .5 - .5 + .02
+            const speed = time * 1;
+            curve.getPointAt(speed % 1, ballPosition);
+            const ball = balls[target][1]
 
-                } else {
-                    area.rotation.x = -1 * (Math.sin(time * 6.3) * .5 - .5 + .02)
-
-                }
-                const b = ball[1]
-
-                b.getWorldPosition(loc)
-                lines[target].forEach(line => {
-                    line.lookAt(loc)
-                })
+            if (target === 0) {
+                ball.position.set(ball.position.x, ballPosition.y, ballPosition.z);
+            } else {
+                ball.position.set(ball.position.x, ballPosition.y, -1 * ballPosition.z);
             }
+            actualScene.rotation.y = time * 0.1
 
+            balls.forEach((ball, ind) => {
+                ball[1].getWorldPosition(loc)
+                lines[ind].forEach(l => {
+                    l.lookAt(loc)
+                })
+            })
             if (Math.floor(time) % 2 === 0) {
                 target = 0
             } else {
                 target = balls.length - 1
             }
-
             renderer.render(scene, camera)
             requestAnimationFrame(render)
         }
-        requestAnimationFrame(render)
 
+        requestAnimationFrame(render)
 
     }, [])
 
@@ -207,9 +235,6 @@ function Lose() {
         <canvas ref={canvasRef} style={{ height: "100vh", width: "100vw" }}></canvas>
     )
 }
-
-
-
 
 
 function First() {
