@@ -20,15 +20,14 @@ export default function Textures() {
     )
 }
 
-
 function Lose() {
     const canvasRef = useRef<HTMLCanvasElement>(null)
 
     useEffect(() => {
         const renderer = new THREE.WebGLRenderer({ canvas: canvasRef.current! })
         const scene = new THREE.Scene()
-        const camera = new THREE.PerspectiveCamera(20, 2, 0.1, 1000)
-        camera.position.set(-4, 4, 10).multiplyScalar(3);
+        const camera = new THREE.PerspectiveCamera(25, window.innerWidth / window.innerHeight, 0.1, 1000)
+        camera.position.set(-4, 5, 10).multiplyScalar(3);
         camera.lookAt(0, 0, 0);
 
 
@@ -110,8 +109,8 @@ function Lose() {
 
         }
 
-        const ballRadius = (boardLength * 0.6) / 5 * .5
-        const cent70 = boardLength * 0.6
+        const ballRadius = (boardLength * 0.5) / 5 * .5
+        const cent70 = boardLength * 0.5
         const ballPositions = [
             { z: cent70 / 2 - ballRadius },
             { z: cent70 / 2 - (ballRadius * 3) },
@@ -121,12 +120,17 @@ function Lose() {
         ]
 
         const balls = ballPositions.map(pos => {
+            const ballArea = new THREE.Object3D()
+            ballArea.position.y = cylinderHeight + boardHeight
+            ballArea.position.z = pos.z
+            board.add(ballArea)
+
             const ballGeo = new THREE.SphereGeometry(ballRadius, 12, 12)
             const ballMesh = new THREE.Mesh(ballGeo, new THREE.MeshPhongMaterial({ color: "grey" }))
-            ballMesh.position.y = boardHeight + 1.5
-            ballMesh.position.z = pos.z
-            board.add(ballMesh)
-            return ballMesh
+            ballMesh.position.y = 0 - cylinderHeight + boardHeight + 1.5
+            ballArea.add(ballMesh)
+
+            return [ballArea, ballMesh]
         })
         const loc = new THREE.Vector3()
 
@@ -141,7 +145,7 @@ function Lose() {
             const lineOne = new THREE.Mesh(geo, material)
             lineOne.position.z = stringLength / 2
 
-            balls[ind].getWorldPosition(loc)
+            balls[ind][1].getWorldPosition(loc)
             handle.lookAt(loc)
             handle.add(lineOne)
 
@@ -158,7 +162,7 @@ function Lose() {
             board.add(handle, handle2)
             return [handle, handle2]
         })
-
+        let target = 0
         function render(time: number) {
             time *= 0.001
             if (addjust(renderer)) {
@@ -166,14 +170,31 @@ function Lose() {
                 camera.aspect = canvas.width / canvas.height
                 camera.updateProjectionMatrix()
             }
-            balls.forEach((ball, ind) => {
-                if (ind === 0) {
-                    ball.position.y = Math.sin(time * 2) * 2
 
-                    ball.getWorldPosition(loc)
-                    lines[0].forEach(handle => handle.lookAt(loc))
+            {
+                const ball = balls[target]
+                const area = ball[0]
+                if (target === 0) {
+                    area.rotation.x = Math.sin(time * 6.3) * .5 - .5 + .02
+
+                } else {
+                    area.rotation.x = -1 * (Math.sin(time * 6.3) * .5 - .5 + .02)
+
                 }
-            })
+                const b = ball[1]
+
+                b.getWorldPosition(loc)
+                lines[target].forEach(line => {
+                    line.lookAt(loc)
+                })
+            }
+
+            if (Math.floor(time) % 2 === 0) {
+                target = 0
+            } else {
+                target = balls.length - 1
+            }
+
             renderer.render(scene, camera)
             requestAnimationFrame(render)
         }
@@ -183,7 +204,7 @@ function Lose() {
     }, [])
 
     return (
-        <canvas ref={canvasRef} style={{ height: "600px", width: "1200px" }}></canvas>
+        <canvas ref={canvasRef} style={{ height: "100vh", width: "100vw" }}></canvas>
     )
 }
 
