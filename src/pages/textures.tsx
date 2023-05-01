@@ -22,17 +22,15 @@ export default function Textures() {
 
 function Lose() {
     const canvasRef = useRef<HTMLCanvasElement>(null)
-
+    const intervalRef = useRef<NodeJS.Timer>()
     useEffect(() => {
+        const fartNoise = new Audio('./fart-01.mp3');
         const renderer = new THREE.WebGLRenderer({ canvas: canvasRef.current! })
         const scene = new THREE.Scene()
         const camera = new THREE.PerspectiveCamera(25, window.innerWidth / window.innerHeight, 0.1, 1000)
         camera.position.set(8, 4, 10).multiplyScalar(3);
         camera.lookAt(0, 0, 0);
-
         const loader = new THREE.TextureLoader()
-
-
         new OrbitControls(camera, renderer.domElement)
 
         {
@@ -141,13 +139,13 @@ function Lose() {
             return [ballArea, ballMesh]
         })
         const loc = new THREE.Vector3()
+        const stringLength = cylinderHeight - 1.5
 
         const lines = ballPositions.map((pos, ind) => {
             const handle = new THREE.Object3D()
             handle.position.y = cylinderHeight + boardHeight
             handle.position.z = pos.z
             handle.position.x = -1 * (boardWidth / 2 - cylinderRadius * 2)
-            const stringLength = cylinderHeight - 1.5
             const geo = new THREE.BoxGeometry(.0125, .0125, stringLength)
             const material = new THREE.MeshPhongMaterial({ color: 0xFFFFFF })
             const lineOne = new THREE.Mesh(geo, material)
@@ -184,11 +182,11 @@ function Lose() {
 
         ]);
 
-        // let points = curve.getPoints(50);
-        // let geometry = new THREE.BufferGeometry().setFromPoints(points);
-        // let material = new THREE.LineBasicMaterial({ color: 0xff0000 });
-        // const splineObject = new THREE.Line(geometry, material);
-        // balls[0][0].add(splineObject);
+        intervalRef.current = setInterval(() => {
+            fartNoise.pause()
+            fartNoise.currentTime = 0
+            fartNoise.play()
+        }, 1000)
 
         let target = 0
         const ballPosition = new THREE.Vector3()
@@ -210,6 +208,7 @@ function Lose() {
             } else {
                 ball.position.set(ball.position.x, ballPosition.y, -1 * ballPosition.z);
             }
+
             actualScene.rotation.y = time * 0.1
 
             balls.forEach((ball, ind) => {
@@ -218,16 +217,22 @@ function Lose() {
                     l.lookAt(loc)
                 })
             })
+
             if (Math.floor(time) % 2 === 0) {
                 target = 0
+
             } else {
                 target = balls.length - 1
             }
+
             renderer.render(scene, camera)
             requestAnimationFrame(render)
         }
 
         requestAnimationFrame(render)
+        return () => {
+            clearInterval(intervalRef.current)
+        }
 
     }, [])
 
