@@ -25,6 +25,7 @@ function Lose() {
     const intervalRef = useRef<NodeJS.Timer>()
     useEffect(() => {
         const fartNoise = new Audio('./fart-01.mp3');
+        canvasRef.current?.click()
         const renderer = new THREE.WebGLRenderer({ canvas: canvasRef.current! })
         const scene = new THREE.Scene()
         const camera = new THREE.PerspectiveCamera(25, window.innerWidth / window.innerHeight, 0.1, 1000)
@@ -139,7 +140,7 @@ function Lose() {
             return [ballArea, ballMesh]
         })
         const loc = new THREE.Vector3()
-        const stringLength = cylinderHeight - 1.5
+        const stringLength = cylinderHeight - 1.5 - ballRadius / 2
 
         const lines = ballPositions.map((pos, ind) => {
             const handle = new THREE.Object3D()
@@ -169,18 +170,18 @@ function Lose() {
             return [handle, handle2]
         })
 
-        let tt = balls[0]
-        let t = tt[1]
 
-        const curve = new THREE.CatmullRomCurve3([
-            new THREE.Vector3(t.position.x, t.position.y, t.position.z),
-            new THREE.Vector3(t.position.x, t.position.y, t.position.z + 1.5),
-            new THREE.Vector3(t.position.x, t.position.y + 1.5, t.position.z + 3),
-            new THREE.Vector3(t.position.x, t.position.y + 1.5, t.position.z + 3),
-            new THREE.Vector3(t.position.x, t.position.y, t.position.z + 1.5),
-            new THREE.Vector3(t.position.x, t.position.y, t.position.z),
+        const arc = new THREE.ArcCurve(-0.025, ballRadius, stringLength + ballRadius * 0.25, -0.5 * Math.PI, 0.5 * Math.PI, false)
 
-        ]);
+        // {
+        //     let tt = balls[0]
+        //     let t = tt[1]
+        //     const points = arc.getPoints(50)
+        //     const geo = new THREE.BufferGeometry().setFromPoints(points)
+        //     const a = new THREE.Line(geo, new THREE.MeshBasicMaterial({ color: "white" }))
+        //     a.rotation.y = - 0.5 * Math.PI
+        //     tt[0].add(a)
+        // }
 
         intervalRef.current = setInterval(() => {
             fartNoise.pause()
@@ -189,8 +190,8 @@ function Lose() {
         }, 1000)
 
         let target = 0
-        const ballPosition = new THREE.Vector3()
-
+        const ballPosition = new THREE.Vector2()
+        let f = false
         function render(time: number) {
             time *= 0.001
             if (addjust(renderer)) {
@@ -200,13 +201,17 @@ function Lose() {
             }
 
             const speed = time * 1;
-            curve.getPointAt(speed % 1, ballPosition);
+            let targetPoint = speed % 1
+            if (targetPoint > 0.5) {
+                targetPoint = 0.5 - (targetPoint - 0.5)
+            }
+            arc.getPointAt(targetPoint, ballPosition);
             const ball = balls[target][1]
 
             if (target === 0) {
-                ball.position.set(ball.position.x, ballPosition.y, ballPosition.z);
+                ball.position.set(ball.position.x, ballPosition.y, ballPosition.x);
             } else {
-                ball.position.set(ball.position.x, ballPosition.y, -1 * ballPosition.z);
+                ball.position.set(ball.position.x, ballPosition.y, -1 * ballPosition.x);
             }
 
             actualScene.rotation.y = time * 0.1
@@ -220,7 +225,6 @@ function Lose() {
 
             if (Math.floor(time) % 2 === 0) {
                 target = 0
-
             } else {
                 target = balls.length - 1
             }
