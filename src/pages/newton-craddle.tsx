@@ -245,59 +245,6 @@ function Lose() {
     )
 }
 
-
-function First() {
-    const canvasRef = useRef<HTMLCanvasElement>(null)
-
-    useEffect(() => {
-        const renderer = new THREE.WebGLRenderer({ canvas: canvasRef.current! })
-        const scene = new THREE.Scene()
-        const camera = new THREE.PerspectiveCamera(75, 2, 0.1, 1000)
-        camera.position.z = 2
-
-        const light = new THREE.DirectionalLight(0xFFFFFF, 1)
-        light.position.z = 10
-        light.position.y = 1
-        scene.add(light)
-
-        new OrbitControls(camera, renderer.domElement)
-        const loader = new THREE.TextureLoader()
-
-        const materials = [
-            new THREE.MeshPhongMaterial({ map: loader.load("./flower-1.jpg"), emissiveIntensity: 0 }),
-            new THREE.MeshPhongMaterial({ map: loader.load("./flower-2.jpg"), emissiveIntensity: 0 }),
-            new THREE.MeshPhongMaterial({ map: loader.load("./flower-3.jpg"), emissiveIntensity: 0 }),
-            new THREE.MeshPhongMaterial({ map: loader.load("./flower-4.jpg"), emissiveIntensity: 0 }),
-            new THREE.MeshPhongMaterial({ map: loader.load("./flower-5.jpg"), emissiveIntensity: 0 }),
-            new THREE.MeshPhongMaterial({ map: loader.load("./flower-6.jpg"), emissiveIntensity: 0 }),
-        ]
-
-        const cube = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), materials)
-
-        scene.add(cube)
-
-        function render(time: number) {
-            time *= 0.001
-            if (addjust(renderer)) {
-                const canvas = canvasRef.current!
-                camera.aspect = canvas.width / canvas.height
-                camera.updateProjectionMatrix()
-            }
-            cube.rotation.x = time * 0.5
-            cube.rotation.y = time * 0.5
-            cube.rotation.z = time * 0.5
-
-            renderer.render(scene, camera)
-            requestAnimationFrame(render)
-        }
-        requestAnimationFrame(render)
-    }, [])
-
-    return (
-        <canvas ref={canvasRef} style={{ width: "600px", height: "300px" }} />
-    )
-}
-
 function addjust(renderer: THREE.WebGLRenderer) {
     const canvas = renderer.domElement
     let needs = false

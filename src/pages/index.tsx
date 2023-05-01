@@ -4,7 +4,6 @@ import { Inter } from 'next/font/google'
 import styles from '@/styles/Home.module.css'
 import Primitives from "@/components/threejs-primitives"
 import SceneGraph from "@/components/scenegraph"
-import Tank from "@/components/tank"
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -20,8 +19,9 @@ export default function Home() {
       <main className={`${styles.main} ${inter.className}`} style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
         <Primitives />
         <SceneGraph />
-        <Tank />
       </main>
     </>
   )
 }
+
+
