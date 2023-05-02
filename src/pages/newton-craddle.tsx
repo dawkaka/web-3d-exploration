@@ -28,6 +28,12 @@ function Lose() {
         canvasRef.current?.click()
         const renderer = new THREE.WebGLRenderer({ canvas: canvasRef.current! })
         const scene = new THREE.Scene()
+        {
+            const color = 0xFFFFFF;  // white
+            const near = 20;
+            const far = 100;
+            scene.fog = new THREE.Fog(color, near, far);
+        }
         const camera = new THREE.PerspectiveCamera(25, window.innerWidth / window.innerHeight, 0.1, 1000)
         camera.position.set(8, 4, 10).multiplyScalar(3);
         camera.lookAt(0, 0, 0);

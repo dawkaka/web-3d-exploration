@@ -10,7 +10,6 @@ export default function Tank() {
         renderer.shadowMap.enabled = true;
         renderer.setSize(canvasRef.current!.clientWidth, canvasRef.current!.clientHeight);
 
-
         function makeCamera(fov = 40) {
             const aspect = window.innerWidth / window.innerHeight;  // the canvas default
             const zNear = 0.1;
@@ -22,7 +21,6 @@ export default function Tank() {
         camera.position.set(8, 4, 10).multiplyScalar(3);
         camera.lookAt(0, 0, 0);
         const scene = new THREE.Scene();
-
         new OrbitControls(camera, renderer.domElement)
 
         {
