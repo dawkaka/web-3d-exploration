@@ -189,15 +189,20 @@ function Lose() {
         //     tt[0].add(a)
         // }
 
-        intervalRef.current = setInterval(() => {
-            fartNoise.pause()
-            fartNoise.currentTime = 0
-            fartNoise.play()
-        }, 1000)
+        const listener = new THREE.AudioListener();
+        camera.add(listener);
+
+        // create a global audio source
+        const sound = new THREE.Audio(listener);
+
+        const audioLoader = new THREE.AudioLoader();
+        audioLoader.load('./fart-01.mp3', function (buffer) {
+            sound.setBuffer(buffer);
+            sound.setVolume(1);
+        });
 
         let target = 0
         const ballPosition = new THREE.Vector2()
-        let f = false
         function render(time: number) {
             time *= 0.001
             if (addjust(renderer)) {
@@ -230,8 +235,16 @@ function Lose() {
             })
 
             if (Math.floor(time) % 2 === 0) {
+                if (target !== 0) {
+                    sound.stop()
+                    sound.play()
+                }
                 target = 0
             } else {
+                if (target === 0) {
+                    sound.stop()
+                    sound.play()
+                }
                 target = balls.length - 1
             }
 
