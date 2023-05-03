@@ -24,7 +24,6 @@ function Lose() {
     const canvasRef = useRef<HTMLCanvasElement>(null)
     const intervalRef = useRef<NodeJS.Timer>()
     useEffect(() => {
-        const fartNoise = new Audio('./fart-01.mp3');
         canvasRef.current?.click()
         const renderer = new THREE.WebGLRenderer({ canvas: canvasRef.current! })
         const scene = new THREE.Scene()
@@ -196,7 +195,7 @@ function Lose() {
         const sound = new THREE.Audio(listener);
 
         const audioLoader = new THREE.AudioLoader();
-        audioLoader.load('./fart-01.mp3', function (buffer) {
+        audioLoader.load('./fart.mp3', function (buffer) {
             sound.setBuffer(buffer);
             sound.setVolume(1);
         });
@@ -233,6 +232,8 @@ function Lose() {
                     l.lookAt(loc)
                 })
             })
+
+
 
             if (Math.floor(time) % 2 === 0) {
                 if (target !== 0) {
