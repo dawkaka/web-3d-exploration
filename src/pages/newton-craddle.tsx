@@ -265,7 +265,7 @@ function Lose() {
     )
 }
 
-function addjust(renderer: THREE.WebGLRenderer) {
+export function addjust(renderer: THREE.WebGLRenderer) {
     const canvas = renderer.domElement
     let needs = false
     const width = canvas.clientWidth
