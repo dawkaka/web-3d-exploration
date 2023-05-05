@@ -35,56 +35,39 @@ function BuffferGeometry() {
   const ref = useRef<HTMLCanvasElement>(null)
   const vertices = [
     // front
-    // { pos: [-1, -1, 1], norm: [0, 0, 1], uv: [0, 0], },
-    // { pos: [1, -1, 1], norm: [0, 0, 1], uv: [1, 0], },
-    // { pos: [-1, 1, 1], norm: [0, 0, 1], uv: [0, 1], },
-
-    // { pos: [-1, 1, 1], norm: [0, 0, 1], uv: [0, 1], },
-    // { pos: [1, -1, 1], norm: [0, 0, 1], uv: [1, 0], },
-    // { pos: [1, 1, 1], norm: [0, 0, 1], uv: [1, 1], },
+    { pos: [-1, -1, 1], norm: [0, 0, 1], uv: [0, 0], },
+    { pos: [1, -1, 1], norm: [0, 0, 1], uv: [1, 0], },
+    { pos: [-1, 1, 1], norm: [0, 0, 1], uv: [0, 1], },
+    { pos: [1, 1, 1], norm: [0, 0, 1], uv: [1, 1], },
 
     // right
-    { pos: [1, -1, 1], norm: [1, 0, 0], uv: [0, 0], },
-    { pos: [1, -1, -1], norm: [1, 0, 0], uv: [1, 0], },
-    { pos: [1, 1, 1], norm: [1, 0, 0], uv: [0, 1], },
+    { pos: [1, -1, 1], norm: [1, 0, 0], uv: [0, 0] },
+    { pos: [1, -1, -1], norm: [1, 0, 0], uv: [1, 0] },
+    { pos: [1, 1, 1], norm: [1, 0, 0], uv: [0, 1] },
+    { pos: [1, 1, -1], norm: [1, 0, 0], uv: [1, 1] },
 
-    { pos: [1, 1, 1], norm: [1, 0, 0], uv: [0, 1], },
-    { pos: [1, -1, -1], norm: [1, 0, 0], uv: [1, 0], },
-    { pos: [1, 1, -1], norm: [1, 0, 0], uv: [1, 1], },
     // back
-
-    { pos: [1, -1, -1], norm: [0, 0, -1], uv: [0, 0], },
-    { pos: [-1, -1, -1], norm: [0, 0, -1], uv: [1, 0], },
-    { pos: [1, 1, -1], norm: [0, 0, -1], uv: [0, 1], },
-
-    { pos: [1, 1, -1], norm: [0, 0, -1], uv: [0, 1], },
-    { pos: [-1, -1, -1], norm: [0, 0, -1], uv: [1, 0], },
-    { pos: [-1, 1, -1], norm: [0, 0, -1], uv: [1, 1], },
-
+    { pos: [1, -1, -1], norm: [0, 0, -1], uv: [0, 0] },
+    { pos: [-1, -1, -1], norm: [0, 0, -1], uv: [1, 0] },
+    { pos: [1, 1, -1], norm: [0, 0, -1], uv: [0, 1] },
+    { pos: [-1, 1, -1], norm: [0, 0, -1], uv: [1, 1] },
 
     // left
     { pos: [-1, -1, -1], norm: [-1, 0, 0], uv: [0, 0], },
     { pos: [-1, -1, 1], norm: [-1, 0, 0], uv: [1, 0], },
     { pos: [-1, 1, -1], norm: [-1, 0, 0], uv: [0, 1], },
-
-    { pos: [-1, 1, -1], norm: [-1, 0, 0], uv: [0, 1], },
-    { pos: [-1, -1, 1], norm: [-1, 0, 0], uv: [1, 0], },
     { pos: [-1, 1, 1], norm: [-1, 0, 0], uv: [1, 1], },
+
     // top
     { pos: [1, 1, -1], norm: [0, 1, 0], uv: [0, 0], },
     { pos: [-1, 1, -1], norm: [0, 1, 0], uv: [1, 0], },
     { pos: [1, 1, 1], norm: [0, 1, 0], uv: [0, 1], },
-
-    { pos: [1, 1, 1], norm: [0, 1, 0], uv: [0, 1], },
-    { pos: [-1, 1, -1], norm: [0, 1, 0], uv: [1, 0], },
     { pos: [-1, 1, 1], norm: [0, 1, 0], uv: [1, 1], },
+
     // bottom
     { pos: [1, -1, 1], norm: [0, -1, 0], uv: [0, 0], },
     { pos: [-1, -1, 1], norm: [0, -1, 0], uv: [1, 0], },
     { pos: [1, -1, -1], norm: [0, -1, 0], uv: [0, 1], },
-
-    { pos: [1, -1, -1], norm: [0, -1, 0], uv: [0, 1], },
-    { pos: [-1, -1, 1], norm: [0, -1, 0], uv: [1, 0], },
     { pos: [-1, -1, -1], norm: [0, -1, 0], uv: [1, 1], },
   ];
 
@@ -150,6 +133,15 @@ function BuffferGeometry() {
     geometry.setAttribute(
       'uv',
       new THREE.BufferAttribute(new Float32Array(uvs), uvNumComponents));
+    geometry.setIndex([
+      0, 1, 2, 2, 1, 3,
+      4, 5, 6, 6, 5, 7,
+      8, 9, 10, 10, 9, 11,
+      12, 13, 14, 14, 13, 15,
+      16, 17, 18, 18, 17, 19,
+      20, 21, 22, 22, 21, 23
+    ])
+
 
     const loader = new THREE.TextureLoader();
     const texture = loader.load('https://threejs.org/manual/examples/resources/images/star.png');
