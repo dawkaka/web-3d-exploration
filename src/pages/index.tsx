@@ -287,8 +287,8 @@ function Shpere() {
     }
 
 
-    const segmentsAround = 24;
-    const segmentsDown = 16;
+    const segmentsAround = 24
+    const segmentsDown = 16
     const { positions, indices } = makeSphere(segmentsAround, segmentsDown);
     const normals = positions.slice()
 
@@ -311,7 +311,7 @@ function Shpere() {
       const material = new THREE.MeshPhongMaterial({
         color,
         side: THREE.DoubleSide,
-        shininess: 100,
+        shininess: 100
       });
 
       const cube = new THREE.Mesh(geometry, material);
@@ -346,16 +346,17 @@ function Shpere() {
         camera.updateProjectionMatrix();
       }
 
-      for (let i = 0; i < positions.length; i += 3) {
-        const quad = (i / 12 | 0);
-        const ringId = quad / segmentsAround | 0;
-        const ringQuadId = quad % segmentsAround;
-        const ringU = ringQuadId / segmentsAround;
-        const angle = ringU * Math.PI * 2;
-        temp.fromArray(normals, i);
-        temp.multiplyScalar(THREE.MathUtils.lerp(1, 1.4, Math.sin(time + ringId + angle) * .5 + .5));
-        temp.toArray(positions, i);
-      }
+      // for (let i = 0; i < positions.length; i += 3) {
+      //   const quad = (i / 12 | 0);
+      //   const ringId = quad / segmentsAround | 0;
+      //   const ringQuadId = quad % segmentsAround;
+      //   const ringU = ringQuadId / segmentsAround;
+      //   const angle = ringU * Math.PI * 2;
+      //   temp.fromArray(normals, i);
+      //   temp.multiplyScalar(THREE.MathUtils.lerp(1, 1.4, Math.sin(time + ringId + angle) * .5 + .5));
+      //   temp.toArray(positions, i);
+      // }
+
       positionAttribute.needsUpdate = true;
       renderer.render(scene, camera);
       requestAnimationFrame(render);
