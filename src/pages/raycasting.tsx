@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react"
 import * as THREE from "three"
-import { addjust } from "./newton-craddle"
+import { addjust } from "./newton-cradle"
 
 export default function Page() {
     const canvasRef = useRef<HTMLCanvasElement>(null)
