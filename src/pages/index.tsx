@@ -24,6 +24,7 @@ export default function Home() {
         <SceneGraph />
         <BuffferGeometry />
         <Shpere />
+        <Raycast />
       </main>
     </>
   )
@@ -119,8 +120,6 @@ function BuffferGeometry() {
       scene.add(light);
     }
 
-
-
     const geometry = new THREE.BufferGeometry();
     const positionNumComponents = 3;
     const normalNumComponents = 3;
@@ -144,8 +143,6 @@ function BuffferGeometry() {
       20, 21, 22, 22, 21, 23
     ])
     geometry.computeVertexNormals()
-
-
 
     const loader = new THREE.TextureLoader();
     const texture = loader.load('https://threejs.org/manual/examples/resources/images/star.png');
@@ -206,12 +203,8 @@ function BuffferGeometry() {
   )
 }
 
-
-
 function Shpere() {
   const ref = useRef<HTMLCanvasElement>(null)
-
-
   useEffect(() => {
     const renderer = new THREE.WebGLRenderer({ antialias: true, canvas: ref.current! });
 
@@ -233,9 +226,9 @@ function Shpere() {
       light.position.set(x, y, z);
       scene.add(light);
     }
+
     addLight(-1, 2, 4);
     addLight(2, -2, 3);
-
 
     function makeSphere(segDown: number, segAround: number) {
       let positions = new Float32Array(segDown * segAround * 6 * 3)
@@ -325,16 +318,7 @@ function Shpere() {
       makeInstance(geometry, 0xFF0000, 0),
     ];
 
-    function resizeRendererToDisplaySize(renderer: THREE.Renderer) {
-      const canvas = renderer.domElement;
-      const width = canvas.clientWidth;
-      const height = canvas.clientHeight;
-      const needResize = canvas.width !== width || canvas.height !== height;
-      if (needResize) {
-        renderer.setSize(width, height, false);
-      }
-      return needResize;
-    }
+
     const temp = new THREE.Vector3();
 
     function render(time: number) {
@@ -346,16 +330,16 @@ function Shpere() {
         camera.updateProjectionMatrix();
       }
 
-      // for (let i = 0; i < positions.length; i += 3) {
-      //   const quad = (i / 12 | 0);
-      //   const ringId = quad / segmentsAround | 0;
-      //   const ringQuadId = quad % segmentsAround;
-      //   const ringU = ringQuadId / segmentsAround;
-      //   const angle = ringU * Math.PI * 2;
-      //   temp.fromArray(normals, i);
-      //   temp.multiplyScalar(THREE.MathUtils.lerp(1, 1.4, Math.sin(time + ringId + angle) * .5 + .5));
-      //   temp.toArray(positions, i);
-      // }
+      for (let i = 0; i < positions.length; i += 3) {
+        const quad = (i / 12 | 0);
+        const ringId = quad / segmentsAround | 0;
+        const ringQuadId = quad % segmentsAround;
+        const ringU = ringQuadId / segmentsAround;
+        const angle = ringU * Math.PI * 2;
+        temp.fromArray(normals, i);
+        temp.multiplyScalar(THREE.MathUtils.lerp(1, 1.4, Math.sin(time + ringId + angle) * .5 + .5));
+        temp.toArray(positions, i);
+      }
 
       positionAttribute.needsUpdate = true;
       renderer.render(scene, camera);
@@ -367,5 +351,87 @@ function Shpere() {
 
   return (
     <canvas ref={ref} style={{ width: "600px", height: "300px" }}></canvas>
+  )
+}
+
+function resizeRendererToDisplaySize(renderer: THREE.Renderer) {
+  const canvas = renderer.domElement;
+  const width = canvas.clientWidth;
+  const height = canvas.clientHeight;
+  const needResize = canvas.width !== width || canvas.height !== height;
+  if (needResize) {
+    renderer.setSize(width, height, false);
+  }
+  return needResize;
+}
+
+function Raycast() {
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+
+  useEffect(() => {
+    const renderer = new THREE.WebGLRenderer({ canvas: canvasRef.current! })
+    const scene = new THREE.Scene()
+
+    const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 1000)
+    camera.position.z = 7
+    camera.position.y = 2
+
+    {
+      const light = new THREE.DirectionalLight(0xffffff, 1);
+      light.position.set(1, 2, 4);
+      scene.add(light);
+    }
+
+    const b1 = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshPhongMaterial({ color: "red" }))
+    scene.add(b1)
+    const b2 = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshPhongMaterial({ color: "red" }))
+    b2.position.x = -2
+    const b3 = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshPhongMaterial({ color: "red" }))
+    b3.position.x = 2
+    scene.add(b2, b3)
+
+    const mouse = new THREE.Vector2()
+
+    window.addEventListener("mousemove", (e) => {
+      const rect = canvasRef.current!.getBoundingClientRect();
+      mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+    });
+
+    const raycast = new THREE.Raycaster()
+
+    function render() {
+      if (resizeRendererToDisplaySize(renderer)) {
+        const canvas = renderer.domElement;
+        camera.aspect = canvas.clientWidth / canvas.clientHeight;
+        camera.updateProjectionMatrix();
+      }
+
+      raycast.setFromCamera(mouse, camera)
+      const intersects = raycast.intersectObjects([b1, b2, b3])
+
+      if (intersects.length > 0) {
+
+        const target = intersects[0]
+        if (target.object instanceof THREE.Mesh) {
+          target.object.material.color.set("blue")
+        }
+      } else {
+        b1.material.color.set("red")
+        b2.material.color.set("red")
+        b3.material.color.set("red")
+      }
+
+      renderer.render(scene, camera)
+      requestAnimationFrame(render)
+
+    }
+
+    requestAnimationFrame(render)
+
+  }, [])
+
+  return (
+    <canvas ref={canvasRef} style={{ width: "600px", height: "300px" }}></canvas>
   )
 }
